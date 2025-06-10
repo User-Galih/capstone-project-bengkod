@@ -1,4 +1,4 @@
-# File: app.py
+# File: app.py (Versi Final dengan Perbaikan Tipe Data)
 
 import streamlit as st
 import pandas as pd
@@ -63,18 +63,16 @@ st.write(input_df)
 if st.button("🔮 Prediksi Sekarang"):
     if all(v is not None for v in [model, le, model_columns]):
         # Tahap Preprocessing yang sama persis seperti di notebook
-        # 1. Lakukan One-Hot Encoding pada input pengguna
         processed_input = pd.get_dummies(input_df, drop_first=False)
-        
-        # 2. Buat DataFrame 'template' kosong dengan semua kolom yang diharapkan model
         final_df = pd.DataFrame(columns=model_columns).fillna(0)
-        
-        # 3. Selaraskan input pengguna dengan template.
-        # Kolom yang cocok akan diisi, yang tidak ada di input akan tetap 0.
         final_df, _ = final_df.align(processed_input, join='left', axis=1, fill_value=0)
-        
-        # 4. Pastikan urutan kolom sudah 100% benar
         final_df = final_df[model_columns]
+
+        # =========================================================================
+        # INI ADALAH BARIS PERBAIKANNYA
+        # Mengubah semua kolom menjadi tipe integer agar cocok dengan ekspektasi model
+        final_df = final_df.astype(int)
+        # =========================================================================
 
         # Lakukan Prediksi
         prediction_encoded = model.predict(final_df)
