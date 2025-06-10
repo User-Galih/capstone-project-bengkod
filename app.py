@@ -10,7 +10,7 @@ def load_resources():
     """Memuat semua file .pkl yang dibutuhkan untuk prediksi."""
     try:
         # Pastikan nama file ini sesuai dengan yang ada di repository Anda
-        model = joblib.load('model.pkl')
+        model = joblib.load('BengKod_Tuned_XGBoost_Model.pkl')
         le = joblib.load('label_encoder.pkl')
         model_cols = joblib.load('model_columns.pkl')
         return model, le, model_cols
