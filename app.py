@@ -83,7 +83,7 @@ def show_home_page():
     
     Gunakan menu navigasi di sebelah kiri untuk menjelajahi setiap bagian dari dasbor ini.
     """)
-    st.image("logo.png", width=400) # Ganti dengan nama file logo Anda jika ada
+    # st.image("logo.png", width=400) # Ganti dengan nama file logo Anda jika ada
 
 def show_full_prediction_page():
     st.title("👨‍⚕️ Prediksi Lengkap (Model XGBoost)")
