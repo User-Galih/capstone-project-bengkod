@@ -259,7 +259,7 @@ def show_model_performance_page():
 # --- NAVIGASI SIDEBAR DAN KONTROL HALAMAN ---
 # =====================================================================================
 with st.sidebar:
-    st.image("logo.png", use_column_width=True) # Ganti dengan nama file logo Anda jika ada
+    # st.image("logo.png", use_column_width=True) # Ganti dengan nama file logo Anda jika ada
     st.title("Navigasi Dasbor")
     
     # Inisialisasi state halaman
