@@ -13,7 +13,6 @@ st.set_page_config(
 )
 
 # --- DEFINISIKAN PATH ASET ---
-# Semua file aset (model, gambar, csv) akan dicari di dalam folder ini
 ASSETS_PATH = 'Assets'
 
 # --- FUNGSI-FUNGSI PEMUAT SUMBER DAYA ---
@@ -39,7 +38,6 @@ def load_simple_model_resources():
     try:
         simple_model_path = os.path.join(ASSETS_PATH, 'Model_Ringkas_XGBoost.pkl')
         simple_model_cols_path = os.path.join(ASSETS_PATH, 'model_columns_ringkas.pkl')
-
         simple_model = joblib.load(simple_model_path)
         simple_model_cols = joblib.load(simple_model_cols_path)
         return simple_model, simple_model_cols
@@ -56,14 +54,12 @@ def map_inputs(input_df):
     """Mengubah input teks dari pengguna menjadi angka sesuai training (urutan alfabetis)."""
     df = input_df.copy()
     
-    # Pemetaan ini sekarang sesuai dengan urutan alfabetis LabelEncoder
     gender_map = {'Female': 0, 'Male': 1}
     yes_no_map = {'no': 0, 'yes': 1}
     caec_map = {'Always': 0, 'Frequently': 1, 'Sometimes': 2, 'no': 3}
     calc_map = {'Always': 0, 'Frequently': 1, 'Sometimes': 2, 'no': 3}
     mtrans_map = {'Automobile': 0, 'Bike': 1, 'Motorbike': 2, 'Public_Transportation': 3, 'Walking': 4}
 
-    # Gunakan .get() untuk keamanan jika kolom tidak ada saat dipanggil oleh model ringkas
     if 'Gender' in df.columns:
         df['Gender'] = df['Gender'].map(gender_map)
     if 'family_history_with_overweight' in df.columns:
@@ -85,12 +81,6 @@ def show_home_page():
     st.title("🚀 Selamat Datang di Dasbor Proyek Obesitas")
     st.markdown("""
     Aplikasi ini adalah demonstrasi lengkap dari sebuah proyek machine learning, mulai dari analisis data hingga deployment model prediktif.
-    
-    **Apa yang bisa Anda lakukan di sini?**
-    - **Prediksi Interaktif**: Gunakan dua model berbeda untuk memprediksi tingkat obesitas berdasarkan input Anda.
-    - **Jelajahi Proses Proyek**: Lihat bagaimana data dianalisis, dibersihkan, dan disiapkan untuk pemodelan.
-    - **Lihat Performa Model**: Pahami seberapa baik model yang kami bangun dan fitur apa yang paling memengaruhinya.
-    
     Gunakan menu navigasi di sebelah kiri untuk menjelajahi setiap bagian dari dasbor ini.
     """)
     try:
@@ -190,6 +180,7 @@ def show_simple_prediction_page():
             else:
                 st.error("Model atau aset lainnya gagal dimuat. Tidak bisa melakukan prediksi.")
 
+
 def show_project_process_page():
     st.title("🔬 Alur Kerja Proyek: Dari Data Mentah ke Model")
     st.write("Bagian ini menceritakan langkah-langkah yang dilakukan dalam proyek ini.")
@@ -203,8 +194,10 @@ def show_project_process_page():
         st.header("Analisis Data Eksplorasi (EDA)")
         try:
             st.image(os.path.join(ASSETS_PATH, 'distribusi_target.png'), caption='Distribusi setiap kategori obesitas dalam dataset.')
-        except FileNotFoundError:
-            st.warning("File 'distribusi_target.png' tidak ditemukan di folder Assets.")
+            st.image(os.path.join(ASSETS_PATH, 'distribusi_numerik.png'), caption='Distribusi fitur-fitur numerik.')
+            st.image(os.path.join(ASSETS_PATH, 'boxplot_outlier.png'), caption='Boxplot untuk mendeteksi outlier.')
+        except FileNotFoundError as e:
+            st.warning(f"Satu atau lebih file gambar EDA tidak ditemukan di folder Assets. Error: {e}")
 
     with tabs[1]:
         st.header("Pra-Pemrosesan Data")
@@ -213,8 +206,9 @@ def show_project_process_page():
         - **Menangani Nilai Hilang**: Mengisi data kosong dengan *median* dan *modus*.
         - **Menghapus Data Duplikat**: Membersihkan baris data yang identik.
         - **Menangani Outlier**: Menyesuaikan nilai ekstrem menggunakan metode IQR.
-        - **Encoding & Normalisasi**: Mengubah data teks menjadi angka dan menyamakan skalanya.
+        - **Encoding Fitur**: Mengubah semua data teks menjadi format angka.
         - **Penyeimbangan Kelas (SMOTE)**: Menyamakan jumlah data untuk setiap kategori target.
+        - **Normalisasi Data**: Menyamakan skala semua fitur numerik ke rentang 0-1.
         """)
         
     with tabs[2]:
@@ -257,12 +251,13 @@ def show_model_performance_page():
     except FileNotFoundError:
         st.error(f"Pastikan 'classification_report.png' dan 'feature_importance.png' ada di folder Assets Anda.")
 
+
 # =====================================================================================
 # --- NAVIGASI SIDEBAR DAN KONTROL HALAMAN ---
 # =====================================================================================
 with st.sidebar:
     try:
-        st.image(os.path.join(ASSETS_PATH, "logo.png"), use_column_width=True)
+        st.image(os.path.join(ASSETS_PATH, "logo.png"), use_container_width=True)
     except Exception:
         pass 
     
@@ -296,4 +291,7 @@ page_functions = {
     'Performa Model': show_model_performance_page
 }
 
-page_functions[st.session_state.page]()
+if st.session_state.page in page_functions:
+    page_functions[st.session_state.page]()
+else:
+    show_home_page()
