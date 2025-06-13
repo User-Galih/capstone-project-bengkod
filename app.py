@@ -205,6 +205,14 @@ def show_simple_prediction_page():
             else:
                 st.error("Model atau aset lainnya gagal dimuat. Tidak bisa melakukan prediksi.")
 
+# --- TAMPILKAN HALAMAN BERANDA ---
+def show_home_page():
+    st.title("🚀 Selamat Datang di Dasbor Proyek Obesitas")
+    st.markdown("""
+    Aplikasi ini adalah demonstrasi lengkap dari sebuah proyek machine learning, mulai dari analisis data hingga deployment model prediktif.
+    Gunakan menu navigasi di sebelah kiri untuk menjelajahi setiap bagian dari dasbor ini.
+    """)
+
 
 def show_project_process_page():
     st.title("🔬 Alur Kerja Proyek: Dari Data Mentah ke Model")
