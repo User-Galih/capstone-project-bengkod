@@ -107,13 +107,20 @@ def show_prediction():
                     'SMOKE': smoke, 'CH2O': ch2o, 'SCC': scc, 'FAF': faf,
                     'TUE': tue, 'CALC': calc, 'MTRANS': mtrans
                 }
-                result = predict(input_data)
-                # 🧪 Tambahkan di sini untuk debug
-                prediction = model.predict(pd.DataFrame([map_inputs(pd.DataFrame([input_data]))]).reindex(columns=model_columns, fill_value=0))
+        
+                # ✅ Debug yang aman
+                input_df = pd.DataFrame([input_data])
+                processed = map_inputs(input_df)
+                final_df = processed.reindex(columns=model_columns, fill_value=0)
+                prediction = model.predict(final_df)
+        
                 st.write("Prediksi (angka):", prediction)
                 st.write("Label hasil:", label_encoder.inverse_transform(prediction))
                 st.write("Kelas urutan:", label_encoder.classes_)
+        
+                result = label_encoder.inverse_transform(prediction)[0]
                 st.success(f"Prediksi kategori obesitas: {result.replace('_', ' ')}")
+
 
 # --- MAIN ---
 page = st.sidebar.selectbox("Navigasi", ["Beranda", "Prediksi Lengkap"])
