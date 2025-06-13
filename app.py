@@ -20,7 +20,7 @@ st.set_page_config(
 def load_resources():
     """Memuat model, encoder, daftar kolom, dan data yang sudah dibersihkan."""
     try:
-        model = joblib.load('BengKod_Tuned_XGBoost_Model.pkl')
+        model = joblib.load('BengKod_Default_XGBoost_Model.pkl')
         le = joblib.load('label_encoder.pkl')
         model_cols = joblib.load('model_columns.pkl')
         df_encoded = pd.read_csv('data_encoded.csv')
