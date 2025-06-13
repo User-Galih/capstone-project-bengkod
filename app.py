@@ -84,32 +84,11 @@ def predict_label(model, input_df, model_columns, label_map):
     prediction_encoded = model.predict(final_df)
     return label_map.get(str(prediction_encoded[0]), "Unknown")
 
-# NOTE: Di fungsi show_full_prediction_page dan show_simple_prediction_page,
-# ganti bagian:
-# prediction_encoded = model.predict(...)
-# prediction_text = le.inverse_transform(...)
-# Menjadi:
-# prediction_text = predict_label(model, input_df, model_columns, label_map)
-
-# =====================================================================================
-# --- FUNGSI UNTUK HALAMAN-HALAMAN APLIKASI ---
-# =====================================================================================
-
-def show_home_page():
-    st.title("🚀 Selamat Datang di Dasbor Proyek Obesitas")
-    st.markdown("""
-    Aplikasi ini adalah demonstrasi lengkap dari sebuah proyek machine learning, mulai dari analisis data hingga deployment model prediktif.
-    Gunakan menu navigasi di sebelah kiri untuk menjelajahi setiap bagian dari dasbor ini.
-    """)
-    try:
-        st.image(os.path.join(ASSETS_PATH, "logo.png"), width=400)
-    except Exception:
-        st.info("Anda bisa menambahkan gambar 'logo.png' ke dalam folder 'Assets' Anda.")
-
+# --- REVISI DI show_full_prediction_page ---
 def show_full_prediction_page():
     st.title("👨‍⚕️ Prediksi Lengkap (Model XGBoost)")
     st.info("Gunakan semua fitur gaya hidup untuk mendapatkan prediksi yang paling komprehensif dari model Machine Learning.", icon="💡")
-    
+
     with st.form("prediction_form"):
         st.header("Isi Data Diri Anda")
         with st.expander("🧍‍♂️ **Data Diri & Fisik**", expanded=True):
@@ -146,23 +125,51 @@ def show_full_prediction_page():
         submitted = st.form_submit_button('**Prediksi Sekarang**', use_container_width=True, type="primary")
 
         if submitted:
-            if all(v is not None for v in [full_model, le, full_model_columns]):
-                data = {'Age': age, 'Height': height, 'Weight': weight, 'FCVC': fcvc, 'NCP': ncp, 'CH2O': ch2o, 
+            if all(v is not None for v in [full_model, label_map, full_model_columns]):
+                data = {'Age': age, 'Height': height, 'Weight': weight, 'FCVC': fcvc, 'NCP': ncp, 'CH2O': ch2o,
                         'FAF': faf, 'TUE': tue, 'Gender': gender, 'family_history_with_overweight': family_history,
                         'FAVC': favc, 'CAEC': caec, 'SMOKE': smoke, 'SCC': scc, 'CALC': calc, 'MTRANS': mtrans}
-                
+
                 input_df = pd.DataFrame([data])
-                processed_input = map_inputs(input_df)
-                final_df = processed_input.reindex(columns=full_model_columns, fill_value=0)
-                
-                prediction_encoded = full_model.predict(final_df)
-                prediction_text = le.inverse_transform(prediction_encoded)[0]
-                
+                prediction_text = predict_label(full_model, input_df, full_model_columns, label_map)
+
                 st.divider()
                 st.success(f"**Hasil Prediksi:** Anda masuk dalam kategori **{prediction_text.replace('_', ' ')}**")
                 st.balloons()
             else:
                 st.error("Model atau aset lainnya gagal dimuat. Tidak bisa melakukan prediksi.")
+
+# --- REVISI DI show_simple_prediction_page ---
+def show_simple_prediction_page():
+    st.title("⚡ Prediksi Ringkas (5 Fitur Utama)")
+    st.info("Dapatkan prediksi cepat hanya dengan 5 fitur kunci yang paling berpengaruh.", icon="💡")
+
+    with st.form("simple_prediction_form"):
+        st.header("Isi 5 Data Kunci")
+        col1, col2 = st.columns(2)
+        with col1:
+            weight = st.number_input('Berat Badan (kg)', 30.0, 200.0, 70.0, step=0.5, key='simple_weight')
+            height = st.number_input('Tinggi (meter)', 1.40, 2.20, 1.70, format="%.2f", key='simple_height')
+        with col2:
+            age = st.slider('Umur', 14, 65, 25, key='simple_age')
+            gender = st.selectbox('Jenis Kelamin', ['Male', 'Female'], key='simple_gender')
+        family_history = st.selectbox('Riwayat keluarga dengan berat badan berlebih?', ['yes', 'no'], key='simple_family')
+
+        submitted = st.form_submit_button('**Prediksi Cepat**', use_container_width=True, type="primary")
+
+        if submitted:
+            if all(v is not None for v in [simple_model, label_map, simple_model_columns]):
+                data = {'Weight': weight, 'Height': height, 'Age': age, 'Gender': gender, 'family_history_with_overweight': family_history}
+
+                input_df = pd.DataFrame([data])
+                prediction_text = predict_label(simple_model, input_df, simple_model_columns, label_map)
+
+                st.divider()
+                st.success(f"**Hasil Prediksi:** Anda masuk dalam kategori **{prediction_text.replace('_', ' ')}**")
+                st.snow()
+            else:
+                st.error("Model atau aset lainnya gagal dimuat. Tidak bisa melakukan prediksi.")
+
 
 def show_simple_prediction_page():
     st.title("⚡ Prediksi Ringkas (5 Fitur Utama)")
