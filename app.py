@@ -15,7 +15,7 @@ ASSETS_PATH = "Assets"
 @st.cache_resource
 def load_model_resources():
     try:
-        model = joblib.load(os.path.join(ASSETS_PATH, 'BengKod_Default_XGBoost_Model.pkl'))
+        model = joblib.load(os.path.join(ASSETS_PATH, 'BengKod_Tuned_XGBoost_Model.pkl'))
         columns = joblib.load(os.path.join(ASSETS_PATH, 'model_columns.pkl'))
         label_encoder = joblib.load(os.path.join(ASSETS_PATH, 'label_encoder.pkl'))
         return model, columns, label_encoder
