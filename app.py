@@ -1,12 +1,8 @@
-# File: app.py (Versi Final dengan Path Aset)
-
 import streamlit as st
 import pandas as pd
 import joblib
 import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
-import os # <-- Impor library 'os' untuk menggabungkan path
+import os
 
 # --- KONFIGURASI HALAMAN ---
 st.set_page_config(
@@ -17,16 +13,21 @@ st.set_page_config(
 )
 
 # --- DEFINISIKAN PATH ASET ---
-ASSETS_PATH = 'Assets' # Nama folder tempat Anda menyimpan semua file
+# Semua file aset (model, gambar, csv) akan dicari di dalam folder ini
+ASSETS_PATH = 'Assets'
 
 # --- FUNGSI-FUNGSI PEMUAT SUMBER DAYA ---
 @st.cache_resource
 def load_full_model_resources():
     """Memuat model LENGKAP dan aset-asetnya."""
     try:
-        model = joblib.load(os.path.join(ASSETS_PATH, 'BengKod_Default_XGBoost_Model.pkl'))
-        le = joblib.load(os.path.join(ASSETS_PATH, 'label_encoder.pkl'))
-        model_cols = joblib.load(os.path.join(ASSETS_PATH, 'model_columns.pkl'))
+        model_path = os.path.join(ASSETS_PATH, 'BengKod_Default_XGBoost_Model.pkl')
+        le_path = os.path.join(ASSETS_PATH, 'label_encoder.pkl')
+        model_cols_path = os.path.join(ASSETS_PATH, 'model_columns.pkl')
+        
+        model = joblib.load(model_path)
+        le = joblib.load(le_path)
+        model_cols = joblib.load(model_cols_path)
         return model, le, model_cols
     except Exception as e:
         st.error(f"Gagal memuat aset model lengkap dari folder '{ASSETS_PATH}': {e}")
@@ -36,8 +37,11 @@ def load_full_model_resources():
 def load_simple_model_resources():
     """Memuat model RINGKAS dan aset-asetnya."""
     try:
-        simple_model = joblib.load(os.path.join(ASSETS_PATH, 'Model_Ringkas_XGBoost.pkl'))
-        simple_model_cols = joblib.load(os.path.join(ASSETS_PATH, 'model_columns_ringkas.pkl'))
+        simple_model_path = os.path.join(ASSETS_PATH, 'Model_Ringkas_XGBoost.pkl')
+        simple_model_cols_path = os.path.join(ASSETS_PATH, 'model_columns_ringkas.pkl')
+
+        simple_model = joblib.load(simple_model_path)
+        simple_model_cols = joblib.load(simple_model_cols_path)
         return simple_model, simple_model_cols
     except Exception as e:
         st.error(f"Gagal memuat aset model ringkas dari folder '{ASSETS_PATH}': {e}")
@@ -47,16 +51,19 @@ def load_simple_model_resources():
 full_model, le, full_model_columns = load_full_model_resources()
 simple_model, simple_model_columns = load_simple_model_resources()
 
-# --- FUNGSI PEMETAAN INPUT ---
+# --- FUNGSI PEMETAAN INPUT (DENGAN ENCODING YANG SUDAH DIPERBAIKI) ---
 def map_inputs(input_df):
-    """Mengubah input teks dari pengguna menjadi angka sesuai training."""
+    """Mengubah input teks dari pengguna menjadi angka sesuai training (urutan alfabetis)."""
     df = input_df.copy()
+    
+    # Pemetaan ini sekarang sesuai dengan urutan alfabetis LabelEncoder
     gender_map = {'Female': 0, 'Male': 1}
     yes_no_map = {'no': 0, 'yes': 1}
-    caec_map = {'no': 0, 'Sometimes': 1, 'Frequently': 2, 'Always': 3}
-    calc_map = {'no': 0, 'Sometimes': 1, 'Frequently': 2, 'Always': 3}
+    caec_map = {'Always': 0, 'Frequently': 1, 'Sometimes': 2, 'no': 3}
+    calc_map = {'Always': 0, 'Frequently': 1, 'Sometimes': 2, 'no': 3}
     mtrans_map = {'Automobile': 0, 'Bike': 1, 'Motorbike': 2, 'Public_Transportation': 3, 'Walking': 4}
 
+    # Gunakan .get() untuk keamanan jika kolom tidak ada saat dipanggil oleh model ringkas
     if 'Gender' in df.columns:
         df['Gender'] = df['Gender'].map(gender_map)
     if 'family_history_with_overweight' in df.columns:
@@ -114,8 +121,8 @@ def show_full_prediction_page():
                 ncp = st.slider('Jumlah makan utama per hari', 1.0, 4.0, 3.0, step=0.1, key='full_ncp')
                 scc = st.selectbox('Monitor kalori makanan?', ['yes', 'no'], key='full_scc')
             with col4:
-                fcvc = st.slider('Frekuensi konsumsi sayuran (1: Tidak, 2: Kdd, 3: Selalu)', 1.0, 3.0, 2.0, step=0.1, key='full_fcvc')
-                ch2o = st.slider('Konsumsi air harian (1: <1L, 2: 1-2L, 3: >2L)', 1.0, 3.0, 2.0, step=0.1, key='full_ch2o')
+                fcvc = st.slider('Frekuensi konsumsi sayuran (1-3)', 1.0, 3.0, 2.0, step=0.1, key='full_fcvc')
+                ch2o = st.slider('Konsumsi air harian (1-3 liter)', 1.0, 3.0, 2.0, step=0.1, key='full_ch2o')
                 caec = st.selectbox('Konsumsi makanan di antara waktu makan', ['no', 'Sometimes', 'Frequently', 'Always'], key='full_caec')
 
         with st.expander("🏃‍♂️ **Aktivitas & Gaya Hidup**"):
@@ -124,8 +131,8 @@ def show_full_prediction_page():
                 smoke = st.selectbox('Apakah Anda merokok?', ['yes', 'no'], key='full_smoke')
                 faf = st.slider('Frekuensi aktivitas fisik (0-3 hari/minggu)', 0.0, 3.0, 1.0, step=0.1, key='full_faf')
             with col6:
-                tue = st.slider('Waktu penggunaan gadget (0: 0-2j, 1: 3-5j, 2: >5j)', 0.0, 2.0, 1.0, step=0.1, key='full_tue')
-                calc = st.selectbox('Frekuensi konsumsi alkohol', ['no', 'Sometimes', 'Frequently'], key='full_calc')
+                tue = st.slider('Waktu penggunaan gadget (0-2 jam/hari)', 0.0, 2.0, 1.0, step=0.1, key='full_tue')
+                calc = st.selectbox('Frekuensi konsumsi alkohol', ['no', 'Sometimes', 'Frequently', 'Always'], key='full_calc')
                 mtrans = st.selectbox('Transportasi Utama', ['Automobile', 'Motorbike', 'Bike', 'Public_Transportation', 'Walking'], key='full_mtrans')
 
         submitted = st.form_submit_button('**Prediksi Sekarang**', use_container_width=True, type="primary")
@@ -182,7 +189,6 @@ def show_simple_prediction_page():
                 st.snow()
             else:
                 st.error("Model atau aset lainnya gagal dimuat. Tidak bisa melakukan prediksi.")
-
 
 def show_project_process_page():
     st.title("🔬 Alur Kerja Proyek: Dari Data Mentah ke Model")
@@ -251,7 +257,6 @@ def show_model_performance_page():
     except FileNotFoundError:
         st.error(f"Pastikan 'classification_report.png' dan 'feature_importance.png' ada di folder Assets Anda.")
 
-
 # =====================================================================================
 # --- NAVIGASI SIDEBAR DAN KONTROL HALAMAN ---
 # =====================================================================================
@@ -259,7 +264,7 @@ with st.sidebar:
     try:
         st.image(os.path.join(ASSETS_PATH, "logo.png"), use_column_width=True)
     except Exception:
-        pass # Jika logo tidak ada, lewati saja
+        pass 
     
     st.title("Navigasi Dasbor")
     
