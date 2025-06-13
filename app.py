@@ -18,12 +18,16 @@ def load_model_resources():
         model = joblib.load(os.path.join(ASSETS_PATH, 'BengKod_Default_XGBoost_Model.pkl'))
         columns = joblib.load(os.path.join(ASSETS_PATH, 'model_columns.pkl'))
         label_encoder = joblib.load(os.path.join(ASSETS_PATH, 'label_encoder.pkl'))
-        return model, columns, label_encoder
+        scaler = joblib.load(os.path.join(ASSETS_PATH, 'minmax_scaler.pkl'))  # ⬅️ Tambahan
+        return model, columns, label_encoder, scaler
     except Exception as e:
         st.error(f"Gagal memuat model atau file lainnya: {e}")
-        return None, None, None
+        return None, None, None, None
 
-model, model_columns, label_encoder = load_model_resources()
+model, model_columns, label_encoder, scaler = load_model_resources()
+
+# Fitur numerik yang dinormalisasi saat training
+numerical_features = ['Age', 'Weight', 'Height', 'FAF', 'NCP', 'CH2O', 'FCVC', 'TUE']
 
 def map_inputs(df):
     df = df.copy()
@@ -41,6 +45,10 @@ def map_inputs(df):
     df['CAEC'] = df['CAEC'].map(caec_map)
     df['CALC'] = df['CALC'].map(calc_map)
     df['MTRANS'] = df['MTRANS'].map(mtrans_map)
+
+    # 🧠 Normalisasi fitur numerik dengan scaler hasil training
+    df[numerical_features] = scaler.transform(df[numerical_features])
+
     return df
 
 def predict(data):
@@ -89,7 +97,7 @@ def show_prediction():
         submitted = st.form_submit_button("Prediksi")
 
         if submitted:
-            if model is None or model_columns is None or label_encoder is None:
+            if model is None or model_columns is None or label_encoder is None or scaler is None:
                 st.error("Model belum dimuat. Coba ulangi.")
             else:
                 input_data = {
