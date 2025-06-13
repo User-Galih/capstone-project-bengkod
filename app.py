@@ -108,6 +108,11 @@ def show_prediction():
                     'TUE': tue, 'CALC': calc, 'MTRANS': mtrans
                 }
                 result = predict(input_data)
+                # 🧪 Tambahkan di sini untuk debug
+                prediction = model.predict(pd.DataFrame([map_inputs(pd.DataFrame([input_data]))]).reindex(columns=model_columns, fill_value=0))
+                st.write("Prediksi (angka):", prediction)
+                st.write("Label hasil:", label_encoder.inverse_transform(prediction))
+                st.write("Kelas urutan:", label_encoder.classes_)
                 st.success(f"Prediksi kategori obesitas: {result.replace('_', ' ')}")
 
 # --- MAIN ---
