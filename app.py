@@ -1,4 +1,4 @@
-# File: app.py (Versi Final - Dasbor Proyek Lengkap)
+# File: app.py (Versi Final dengan Path Aset)
 
 import streamlit as st
 import pandas as pd
@@ -6,6 +6,7 @@ import joblib
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+import os # <-- Impor library 'os' untuk menggabungkan path
 
 # --- KONFIGURASI HALAMAN ---
 st.set_page_config(
@@ -15,28 +16,31 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# --- DEFINISIKAN PATH ASET ---
+ASSETS_PATH = 'Assets' # Nama folder tempat Anda menyimpan semua file
+
 # --- FUNGSI-FUNGSI PEMUAT SUMBER DAYA ---
 @st.cache_resource
 def load_full_model_resources():
     """Memuat model LENGKAP dan aset-asetnya."""
     try:
-        model = joblib.load('BengKod_Default_XGBoost_Model.pkl')
-        le = joblib.load('label_encoder.pkl')
-        model_cols = joblib.load('model_columns.pkl')
+        model = joblib.load(os.path.join(ASSETS_PATH, 'BengKod_Default_XGBoost_Model.pkl'))
+        le = joblib.load(os.path.join(ASSETS_PATH, 'label_encoder.pkl'))
+        model_cols = joblib.load(os.path.join(ASSETS_PATH, 'model_columns.pkl'))
         return model, le, model_cols
     except Exception as e:
-        st.error(f"Gagal memuat aset model lengkap: {e}")
+        st.error(f"Gagal memuat aset model lengkap dari folder '{ASSETS_PATH}': {e}")
         return None, None, None
 
 @st.cache_resource
 def load_simple_model_resources():
     """Memuat model RINGKAS dan aset-asetnya."""
     try:
-        simple_model = joblib.load('Model_Ringkas_XGBoost.pkl')
-        simple_model_cols = joblib.load('model_columns_ringkas.pkl')
+        simple_model = joblib.load(os.path.join(ASSETS_PATH, 'Model_Ringkas_XGBoost.pkl'))
+        simple_model_cols = joblib.load(os.path.join(ASSETS_PATH, 'model_columns_ringkas.pkl'))
         return simple_model, simple_model_cols
     except Exception as e:
-        st.error(f"Gagal memuat aset model ringkas: {e}")
+        st.error(f"Gagal memuat aset model ringkas dari folder '{ASSETS_PATH}': {e}")
         return None, None
 
 # --- MEMUAT SEMUA SUMBER DAYA ---
@@ -53,7 +57,6 @@ def map_inputs(input_df):
     calc_map = {'no': 0, 'Sometimes': 1, 'Frequently': 2, 'Always': 3}
     mtrans_map = {'Automobile': 0, 'Bike': 1, 'Motorbike': 2, 'Public_Transportation': 3, 'Walking': 4}
 
-    # Gunakan .get() untuk keamanan jika kolom tidak ada
     if 'Gender' in df.columns:
         df['Gender'] = df['Gender'].map(gender_map)
     if 'family_history_with_overweight' in df.columns:
@@ -83,7 +86,10 @@ def show_home_page():
     
     Gunakan menu navigasi di sebelah kiri untuk menjelajahi setiap bagian dari dasbor ini.
     """)
-    # st.image("logo.png", width=400) # Ganti dengan nama file logo Anda jika ada
+    try:
+        st.image(os.path.join(ASSETS_PATH, "logo.png"), width=400)
+    except Exception:
+        st.info("Anda bisa menambahkan gambar 'logo.png' ke dalam folder 'Assets' Anda.")
 
 def show_full_prediction_page():
     st.title("👨‍⚕️ Prediksi Lengkap (Model XGBoost)")
@@ -119,7 +125,7 @@ def show_full_prediction_page():
                 faf = st.slider('Frekuensi aktivitas fisik (0-3 hari/minggu)', 0.0, 3.0, 1.0, step=0.1, key='full_faf')
             with col6:
                 tue = st.slider('Waktu penggunaan gadget (0: 0-2j, 1: 3-5j, 2: >5j)', 0.0, 2.0, 1.0, step=0.1, key='full_tue')
-                calc = st.selectbox('Frekuensi konsumsi alkohol', ['no', 'Sometimes', 'Frequently'], key='full_calc') # 'Always' dihilangkan jika jarang ada
+                calc = st.selectbox('Frekuensi konsumsi alkohol', ['no', 'Sometimes', 'Frequently'], key='full_calc')
                 mtrans = st.selectbox('Transportasi Utama', ['Automobile', 'Motorbike', 'Bike', 'Public_Transportation', 'Walking'], key='full_mtrans')
 
         submitted = st.form_submit_button('**Prediksi Sekarang**', use_container_width=True, type="primary")
@@ -183,113 +189,106 @@ def show_project_process_page():
     st.write("Bagian ini menceritakan langkah-langkah yang dilakukan dalam proyek ini.")
 
     tabs = st.tabs([
-        "1. EDA", 
-        "2. Preprocessing", 
-        "3. Korelasi", 
-        "4. Perbandingan Model", 
-        "5. Optimasi Model"
+        "1. EDA", "2. Preprocessing", "3. Korelasi", 
+        "4. Perbandingan Model", "5. Optimasi Model"
     ])
 
     with tabs[0]:
         st.header("Analisis Data Eksplorasi (EDA)")
-        st.write("Memahami distribusi dan karakteristik data awal.")
         try:
-            st.image('distribusi_target.png', caption='Distribusi setiap kategori obesitas dalam dataset.')
-            # Tambahkan visualisasi lain jika ada
+            st.image(os.path.join(ASSETS_PATH, 'distribusi_target.png'), caption='Distribusi setiap kategori obesitas dalam dataset.')
         except FileNotFoundError:
-            st.warning("Pastikan Anda sudah menyimpan gambar 'distribusi_target.png' dari notebook.")
+            st.warning("File 'distribusi_target.png' tidak ditemukan di folder Assets.")
 
     with tabs[1]:
         st.header("Pra-Pemrosesan Data")
-        st.write("Membersihkan dan menyiapkan data sebelum pemodelan.")
         st.markdown("""
-        Beberapa langkah kunci yang dilakukan:
-        - **Menangani Nilai Hilang**: Mengisi data kosong dengan *median* (untuk angka) dan *modus* (untuk teks).
+        Langkah-langkah kunci yang dilakukan:
+        - **Menangani Nilai Hilang**: Mengisi data kosong dengan *median* dan *modus*.
         - **Menghapus Data Duplikat**: Membersihkan baris data yang identik.
         - **Menangani Outlier**: Menyesuaikan nilai ekstrem menggunakan metode IQR.
-        - **Encoding & Normalisasi**: Mengubah semua data menjadi format angka dan menyamakan skalanya.
+        - **Encoding & Normalisasi**: Mengubah data teks menjadi angka dan menyamakan skalanya.
         - **Penyeimbangan Kelas (SMOTE)**: Menyamakan jumlah data untuk setiap kategori target.
         """)
         
     with tabs[2]:
         st.header("Analisis Korelasi")
-        st.write("Melihat hubungan statistik antar fitur.")
         try:
-            st.image('heatmap_korelasi.png', caption='Heatmap menunjukkan korelasi antar fitur.')
+            st.image(os.path.join(ASSETS_PATH, 'heatmap_korelasi.png'), caption='Heatmap menunjukkan korelasi antar fitur.')
         except FileNotFoundError:
-            st.warning("Pastikan Anda sudah menyimpan gambar 'heatmap_korelasi.png' dari notebook.")
+            st.warning("File 'heatmap_korelasi.png' tidak ditemukan di folder Assets.")
 
     with tabs[3]:
         st.header("Perbandingan Model Awal (Baseline)")
-        st.write("Menguji beberapa algoritma dengan parameter default.")
         try:
-            st.image('perbandingan_model_awal.png', caption='Perbandingan akurasi dari model-model awal.')
-            df_hasil_awal = pd.read_csv('hasil_model_awal.csv')
+            st.image(os.path.join(ASSETS_PATH, 'perbandingan_model_awal.png'), caption='Perbandingan akurasi dari model-model awal.')
+            df_hasil_awal = pd.read_csv(os.path.join(ASSETS_PATH, 'hasil_model_awal.csv'))
             st.dataframe(df_hasil_awal)
         except FileNotFoundError:
-            st.warning("Pastikan Anda sudah menyimpan 'perbandingan_model_awal.png' dan 'hasil_model_awal.csv' dari notebook.")
+            st.warning("Pastikan 'perbandingan_model_awal.png' dan 'hasil_model_awal.csv' ada di folder Assets.")
             
     with tabs[4]:
         st.header("Optimasi Model (Hyperparameter Tuning)")
-        st.write("Mencari kombinasi parameter terbaik untuk meningkatkan performa model.")
         try:
-            st.image('perbandingan_tuning.png', caption='Perbandingan akurasi sebelum dan sesudah hyperparameter tuning.')
+            st.image(os.path.join(ASSETS_PATH, 'perbandingan_tuning.png'), caption='Perbandingan akurasi sebelum dan sesudah hyperparameter tuning.')
             st.markdown("""
-            Dari hasil optimasi, ditemukan bahwa **model XGBoost dengan parameter default** ternyata memberikan performa sedikit lebih baik daripada versi yang di-tuning. Ini menunjukkan parameter bawaan XGBoost sudah sangat kuat untuk dataset ini. Oleh karena itu, model default inilah yang dipilih sebagai model final.
+            Dari hasil optimasi, ditemukan bahwa **model XGBoost dengan parameter default** ternyata memberikan performa sedikit lebih baik daripada versi yang di-tuning. Oleh karena itu, model default inilah yang dipilih sebagai model final.
             """)
         except FileNotFoundError:
-            st.warning("Pastikan Anda sudah menyimpan gambar 'perbandingan_tuning.png' dari notebook.")
+            st.warning("File 'perbandingan_tuning.png' tidak ditemukan di folder Assets.")
 
 
 def show_model_performance_page():
     st.title("🏆 Performa Model Final (XGBoost)")
-    st.write("Bagian ini menunjukkan seberapa baik performa model XGBoost terpilih, berdasarkan pengujian dengan data yang belum pernah dilihat sebelumnya.")
+    st.write("Bagian ini menunjukkan seberapa baik performa model XGBoost terpilih.")
 
     try:
-        st.subheader("1. Laporan Klasifikasi (Classification Report)")
-        st.image('classification_report.png', caption='Hasil Uji Performa Model XGBoost Final.')
+        st.subheader("1. Laporan Klasifikasi")
+        st.image(os.path.join(ASSETS_PATH, 'classification_report.png'), caption='Hasil Uji Performa Model XGBoost Final.')
         st.divider()
         st.subheader("2. Pentingnya Fitur (Feature Importance)")
-        st.image('feature_importance.png', caption='Peringkat Fitur berdasarkan Kontribusinya pada Model.')
+        st.image(os.path.join(ASSETS_PATH, 'feature_importance.png'), caption='Peringkat Fitur berdasarkan Kontribusinya pada Model.')
     except FileNotFoundError:
-        st.error("Pastikan file gambar 'classification_report.png' dan 'feature_importance.png' ada di repository Anda.")
+        st.error(f"Pastikan 'classification_report.png' dan 'feature_importance.png' ada di folder Assets Anda.")
 
 
 # =====================================================================================
 # --- NAVIGASI SIDEBAR DAN KONTROL HALAMAN ---
 # =====================================================================================
 with st.sidebar:
-    # st.image("logo.png", use_column_width=True) # Ganti dengan nama file logo Anda jika ada
+    try:
+        st.image(os.path.join(ASSETS_PATH, "logo.png"), use_column_width=True)
+    except Exception:
+        pass # Jika logo tidak ada, lewati saja
+    
     st.title("Navigasi Dasbor")
     
-    # Inisialisasi state halaman
     if 'page' not in st.session_state:
         st.session_state.page = 'Beranda'
 
-    # Tombol navigasi
-    if st.button("🏠 Beranda", use_container_width=True):
-        st.session_state.page = 'Beranda'
-    if st.button("👨‍⚕️ Prediksi Lengkap", use_container_width=True):
-        st.session_state.page = 'Prediksi Lengkap'
-    if st.button("⚡ Prediksi Ringkas", use_container_width=True):
-        st.session_state.page = 'Prediksi Ringkas'
-    if st.button("🔬 Proses Proyek", use_container_width=True):
-        st.session_state.page = 'Proses Proyek'
-    if st.button("🏆 Performa Model", use_container_width=True):
-        st.session_state.page = 'Performa Model'
-
+    pages = {
+        "Beranda": "🏠 Beranda",
+        "Prediksi Lengkap": "👨‍⚕️ Prediksi Lengkap",
+        "Prediksi Ringkas": "⚡ Prediksi Ringkas",
+        "Proses Proyek": "🔬 Proses Proyek",
+        "Performa Model": "🏆 Performa Model"
+    }
+    
+    for page_key, page_title in pages.items():
+        if st.button(page_title, use_container_width=True, type='primary' if st.session_state.page == page_key else 'secondary'):
+            st.session_state.page = page_key
+    
     st.divider()
     st.info("Dasbor ini dibuat untuk mendemonstrasikan alur kerja proyek Machine Learning.")
 
 
 # Kontrol untuk menampilkan halaman yang sesuai
-if st.session_state.page == 'Beranda':
-    show_home_page()
-elif st.session_state.page == 'Prediksi Lengkap':
-    show_full_prediction_page()
-elif st.session_state.page == 'Prediksi Ringkas':
-    show_simple_prediction_page()
-elif st.session_state.page == 'Proses Proyek':
-    show_project_process_page()
-elif st.session_state.page == 'Performa Model':
-    show_model_performance_page()
+page_functions = {
+    'Beranda': show_home_page,
+    'Prediksi Lengkap': show_full_prediction_page,
+    'Prediksi Ringkas': show_simple_prediction_page,
+    'Proses Proyek': show_project_process_page,
+    'Performa Model': show_model_performance_page
+}
+
+page_functions[st.session_state.page]()
