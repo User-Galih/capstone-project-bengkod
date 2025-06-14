@@ -3,8 +3,8 @@ import joblib
 import numpy as np
 
 # Load model dan asset
-model = joblib.load("Assets/model_xgb_tuned.pkl")
-scaler = joblib.load("Assets/scaler.pkl")
+model = joblib.load("Assets/model_xgb_tuned (2).pkl")
+scaler = joblib.load("Assets/scaler (3).pkl")
 selected_features = joblib.load("Assets/selected_features.pkl")
 
 label_mapping = {
