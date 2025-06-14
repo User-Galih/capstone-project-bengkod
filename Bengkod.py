@@ -87,3 +87,25 @@ if st.button("🎯 Predict My Category"):
     st.markdown("---")
     st.markdown("<div class='result-title'>Your Body Weight Category:</div>", unsafe_allow_html=True)
     st.markdown(f"<div class='result-value'>{result_label}</div>", unsafe_allow_html=True)
+
+# Penjelasan proyek
+st.markdown("---")
+st.markdown("## 📘 Project Background")
+st.markdown("""
+Berdasarkan hasil seleksi fitur menggunakan metode **ANOVA F-score**, saya memilih 5 fitur teratas yang memiliki korelasi paling tinggi terhadap label klasifikasi, yaitu:
+
+- **Weight (Berat Badan)**
+- **Gender (Jenis Kelamin)**
+- **family_history_with_overweight (Riwayat Keluarga yang Kelebihan Berat Badan)**
+- **FCVC (Frekuensi Konsumsi Sayur)**
+- **Age (Usia)**
+
+Namun, demi kemudahan dan relevansi dalam proses deployment, saya mengganti fitur **FCVC** dengan **Height (Tinggi Badan)**. Keputusan ini diambil untuk menyesuaikan dengan pendekatan yang digunakan oleh organisasi seperti **WHO** dan metode **Body Mass Index (BMI)**, yang mempertimbangkan berat badan dan tinggi badan sebagai indikator utama untuk mengukur status gizi seseorang.
+""")
+
+# Referensi
+st.markdown("### 🔗 References")
+st.markdown("""
+- [BMI Calculator – Calculator.net](https://www.calculator.net/bmi-calculator.html)  
+- [Truth About Weight – Global Initiative](https://www.truthaboutweight.global/)
+""")
