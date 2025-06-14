@@ -3,7 +3,7 @@ import joblib
 import numpy as np
 
 # Load model 
-model = joblib.load("Assets/model_xgb.pkl")
+model = joblib.load("Assets/model_xgb_tuned.pkl")
 scaler = joblib.load("Assets/scaler.pkl")
 selected_features = joblib.load("Assets/selected_features.pkl")
 
