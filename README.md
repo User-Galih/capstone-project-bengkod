@@ -29,12 +29,14 @@ Keputusan ini mengacu pada pendekatan yang digunakan oleh **WHO** dan metode **B
 
 ## 📂 Struktur File Utama
 
+```bash
 ├── Assets/
 │   ├── model_xgb_tuned.pkl           # Model machine learning hasil pelatihan
 │   ├── scaler.pkl                    # StandardScaler untuk data input
 │   └── selected_features.pkl         # Fitur yang digunakan
-├── Bengkod.py                            # File utama untuk Streamlit app
-├── README.md                         # Penjelasan proyek..
+├── Bengkod.py                        # File utama untuk Streamlit app
+├── README.md                         # Penjelasan proyek
+
 
 ## 🧠 Teknologi yang Digunakan
 
