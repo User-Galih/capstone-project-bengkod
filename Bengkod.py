@@ -3,9 +3,9 @@ import joblib
 import numpy as np
 
 # Load model 
-model = joblib.load("model_xgb.pkl")
-scaler = joblib.load("scaler.pkl")
-selected_features = joblib.load("selected_features.pkl")
+model = joblib.load("Assets/model_xgb.pkl")
+scaler = joblib.load("Assets/scaler.pkl")
+selected_features = joblib.load("Assets/selected_features.pkl")
 
 label_mapping = {
     0: "Insufficient Weight",
