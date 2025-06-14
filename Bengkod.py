@@ -6,16 +6,7 @@ import numpy as np
 model = joblib.load("Assets/model_xgb_tuned (2).pkl")
 scaler = joblib.load("Assets/scaler (3).pkl")
 selected_features = joblib.load("Assets/selected_features.pkl")
-
-label_mapping = {
-    0: "Insufficient Weight",
-    1: "Normal Weight",
-    2: "Overweight Level I",
-    3: "Overweight Level II",
-    4: "Obesity Type I",
-    5: "Obesity Type II",
-    6: "Obesity Type III"
-}
+label_encoder = joblib.load("Assets/label_encoder (3).pkl")  # GUNAKAN ENCODER
 
 # Konfigurasi halaman
 st.set_page_config(page_title="BodyFit Classifier", page_icon="💪", layout="centered")
@@ -87,13 +78,13 @@ fam_history = st.radio("Family history of obesity?", ["Yes", "No"], horizontal=T
 if st.button("🎯 Predict My Category"):
     gender_encoded = 1 if gender == "Male" else 0
     fam_encoded = 1 if fam_history == "Yes" else 0
-    height_m = height / 100
+    height_m = height / 100  # Ubah ke meter agar sesuai dengan training data
 
     input_data = np.array([[age, gender_encoded, height_m, weight, fam_encoded]])
     input_scaled = scaler.transform(input_data)
 
     prediction = model.predict(input_scaled)
-    result_label = label_mapping.get(int(prediction[0]), "Unknown")
+    result_label = label_encoder.inverse_transform(prediction)[0]  # Pakai encoder, bukan mapping manual
 
     st.markdown("---")
     st.markdown("<div class='result-title'>Your Body Weight Category:</div>", unsafe_allow_html=True)
